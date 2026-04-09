@@ -90,10 +90,11 @@ CS123A_Project/
 │   ├── 07_pharmgkb_integration.ipynb # Task 7: PharmGKB cross-reference per compound
 │   └── 08_interpretation.ipynb     # Task 8: feature analysis, summary, report
 ├── src/
-│   ├── features.py                 # RDKit descriptor/fingerprint computation
-│   ├── model.py                    # SVC training and evaluation utilities
-│   ├── pubchem_api.py              # PubChem compound retrieval
-│   └── pharmgkb_api.py             # PharmGKB annotation lookup
+│   ├── features.py     # RDKit descriptor/fingerprint computation
+│   ├── train.py        # SVC training, grid search, model persistence
+│   ├── evaluate.py     # accuracy, precision, recall, AUC-ROC, MCC
+│   ├── screen.py       # PubChem compound retrieval + SVC screening
+│   └── pharmgkb.py     # PharmGKB annotation lookup per compound
 ├── results/
 │   ├── figures/                    # EDA plots, ROC curves, feature importance
 │   └── predictions/                # SVC predictions on PubChem candidates
