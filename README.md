@@ -62,6 +62,21 @@ Instructor CSV Data
 
 ---
 
+## Progress
+
+| Task | Notebook | Status | Notes |
+|------|----------|--------|-------|
+| 1 — Data Cleaning | `01_data_cleaning.ipynb` | ✅ Complete | 357 → 313 columns; 243 compounds; 0 missing values |
+| 2 — Feature Engineering | `02_feature_engineering.ipynb` | Pending | |
+| 3 — EDA | `03_eda.ipynb` | Pending | |
+| 4 — Model Training | `04_model_training.ipynb` | Pending | |
+| 5 — Model Evaluation | `05_model_evaluation.ipynb` | Pending | |
+| 6 — PubChem Screening | `06_pubchem_screening.ipynb` | Pending | |
+| 7 — PharmGKB Integration | `07_pharmgkb_integration.ipynb` | Pending | |
+| 8 — Interpretation | `08_interpretation.ipynb` | Pending | |
+
+---
+
 ## Team
 
 | Name | Major | Email |
@@ -143,6 +158,18 @@ pip install -r requirements.txt
 The primary training dataset is an instructor-provided CSV (`chemical_compounds.csv`) containing PubChem CIDs, activity class labels (0 = inactive, 1 = active), and ~300 precomputed molecular descriptors (PubChem properties and MOE-style descriptors). Place it in `data/raw/` before running the notebooks.
 
 > Note: the training CSV already contains precomputed descriptors, so RDKit is used primarily for featurizing novel PubChem compounds during the screening step (Task 6).
+
+### Cleaning summary (Task 1)
+
+| | Value |
+|-|-------|
+| Raw shape | 243 compounds × 357 columns |
+| Cleaned shape | 243 compounds × 313 columns |
+| Columns dropped | 44 (1 non-numeric constant + 43 zero-variance) |
+| Missing values (final) | 0 (remaining gaps filled with column median) |
+| Class split | 72 inactive (0) · 171 active (1) — ~30/70 |
+
+The cleaned dataset is saved to `data/processed/compounds_clean.csv`.
 
 Candidate compounds for screening are retrieved live from the PubChem REST API via `src/pubchem_api.py`.
 
