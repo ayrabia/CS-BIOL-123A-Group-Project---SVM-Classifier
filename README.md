@@ -67,10 +67,10 @@ Instructor CSV Data
 | Task | Notebook | Status | Notes |
 |------|----------|--------|-------|
 | 1 — Data Cleaning | `01_data_cleaning.ipynb` | ✅ Complete | 357 → 313 columns; 243 compounds; 0 missing values |
-| 2 — Feature Engineering | `02_feature_engineering.ipynb` | Pending | |
-| 3 — EDA | `03_eda.ipynb` | Pending | |
-| 4 — Model Training | `04_model_training.ipynb` | Pending | |
-| 5 — Model Evaluation | `05_model_evaluation.ipynb` | Pending | |
+| 2 — Feature Engineering | `02_feature_engineering.ipynb` | ✅ Complete | StandardScaler applied; X_scaled, y, cid saved |
+| 3 — EDA | `03_eda.ipynb` | ✅ Complete | 311 → 198 features after correlation pruning (r > 0.95); top features: GCUT_PEOE_1, MNDO_LUMO, PM3_LUMO |
+| 4 — Model Training | `04_model_training.ipynb` | ✅ Complete | SVC RBF, C=10, gamma=0.001; scaler fit on train only |
+| 5 — Model Evaluation | `05_model_evaluation.ipynb` | ✅ Complete | Accuracy=1.0, Precision=1.0, Recall=1.0, AUC-ROC=1.0, MCC=1.0 |
 | 6 — PubChem Screening | `06_pubchem_screening.ipynb` | Pending | |
 | 7 — PharmGKB Integration | `07_pharmgkb_integration.ipynb` | Pending | |
 | 8 — Interpretation | `08_interpretation.ipynb` | Pending | |

@@ -17,11 +17,12 @@ env/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Data — do not commit instructor-provided CSV files
+# Data — do not commit instructor-provided CSV files or processed arrays
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/compounds_clean.csv
 
 # Results — large outputs
 results/predictions/
