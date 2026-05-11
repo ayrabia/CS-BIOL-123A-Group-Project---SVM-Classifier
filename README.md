@@ -73,7 +73,7 @@ Instructor CSV Data
 | 5 — Model Evaluation | `05_model_evaluation.ipynb` | ✅ Complete | Accuracy=1.0, Precision=1.0, Recall=1.0, AUC-ROC=1.0, MCC=1.0 |
 | 6 — PubChem Screening | `06_pubchem_screening.ipynb` | ✅ Complete | 591 candidates screened; 533 predicted active; screening SVC CV F1=0.9875 |
 | 7 — PharmGKB Integration | `07_pharmgkb_integration.ipynb` | ✅ Complete | 1/533 predicted actives found in PharmGKB: dabrafenib (FDA-approved BRAF inhibitor) |
-| 8 — Interpretation | `08_interpretation.ipynb` | Pending | |
+| 8 — Interpretation | `08_interpretation.ipynb` | ✅ Complete | Full results synthesis; top features, metrics, novel hits, limitations, conclusions |
 
 ---
 
