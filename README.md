@@ -2,15 +2,11 @@
 
 **CS/BIOL 123A — Bioinformatics | SJSU | Spring 2026**
 
----
-
 ## Project Description
 
 This project applies machine learning to identify novel small molecule candidates capable of inhibiting the BRAF V600E oncogenic mutation — one of the most clinically significant driver mutations in melanoma, colorectal cancer, and thyroid cancer. BRAF V600E constitutively activates the MAPK/ERK signaling pathway, leading to uncontrolled cell proliferation. While FDA-approved inhibitors such as vemurafenib exist, acquired drug resistance motivates the search for new candidates.
 
 We build a **Support Vector Machine classifier (SVC — classification, not SVR)** using scikit-learn, trained on instructor-provided CSV datasets of candidate compounds. Molecular descriptors and Morgan fingerprints are computed with RDKit. The trained model is then applied to screen novel candidate compounds retrieved from PubChem. Each predicted inhibitor is assessed by model metrics (precision, recall, accuracy) and cross-referenced with PharmGKB for pharmacogenomic annotations, known drug interactions, and existing clinical data.
-
----
 
 ## Pipeline Overview
 
@@ -60,8 +56,6 @@ Instructor CSV Data
    compile final report and code documentation)
 ```
 
----
-
 ## Progress
 
 | Task | Notebook | Status | Notes |
@@ -75,8 +69,6 @@ Instructor CSV Data
 | 7 — PharmGKB Integration | `07_pharmgkb_integration.ipynb` | ✅ Complete | 1/533 predicted actives found in PharmGKB: dabrafenib (FDA-approved BRAF inhibitor) |
 | 8 — Interpretation | `08_interpretation.ipynb` | ✅ Complete | Full results synthesis; top features, metrics, novel hits, limitations, conclusions |
 
----
-
 ## Team
 
 | Name | Major | Email |
@@ -85,8 +77,6 @@ Instructor CSV Data
 | Jasjit Deol | Data Science | jasjit.deol@sjsu.edu |
 | Chandrahas Sai Vishnumolakala | Data Science | chandrahassai.vishnumolakala@sjsu.edu |
 | *(Team Member 4 — TBD)* | — | — |
-
----
 
 ## Repository Structure
 
@@ -116,8 +106,6 @@ CS123A_Project/
 ├── requirements.txt
 └── README.md
 ```
-
----
 
 ## Installation
 
@@ -151,8 +139,6 @@ pip install -r requirements.txt
 > pip install -r requirements.txt   # installs remaining packages
 > ```
 
----
-
 ## Data
 
 The primary training dataset is an instructor-provided CSV (`chemical_compounds.csv`) containing PubChem CIDs, activity class labels (0 = inactive, 1 = active), and ~300 precomputed molecular descriptors (PubChem properties and MOE-style descriptors). Place it in `data/raw/` before running the notebooks.
@@ -173,8 +159,6 @@ The cleaned dataset is saved to `data/processed/compounds_clean.csv`.
 
 Candidate compounds for screening are retrieved live from the PubChem REST API via `src/pubchem_api.py`.
 
----
-
 ## How to Run the Pipeline
 
 Run notebooks in order from the `notebooks/` directory:
@@ -194,8 +178,6 @@ jupyter notebook
 | 7 | `07_pharmgkb_integration.ipynb` | Cross-reference each predicted compound with PharmGKB |
 | 8 | `08_interpretation.ipynb` | Feature analysis, findings summary, report compilation |
 
----
-
 ## Classifier Design
 
 We use **scikit-learn's `SVC`** (Support Vector Classifier — the classification variant, not `SVR`) to build a binary small molecule activity prediction model. The model distinguishes active BRAF V600E inhibitors from inactive compounds.
@@ -203,8 +185,6 @@ We use **scikit-learn's `SVC`** (Support Vector Classifier — the classificatio
 Prediction quality for each novel compound is assessed by:
 1. **Model metrics** — precision, recall, and accuracy of the trained SVC
 2. **PharmGKB lookup** — if the compound exists in PharmGKB, existing pharmacogenomic annotations, drug interactions, and clinical data are used to further evaluate its relevance
-
----
 
 ## Resources
 
@@ -224,8 +204,6 @@ Prediction quality for each novel compound is assessed by:
 - matplotlib, seaborn — visualization
 - requests — PubChem and PharmGKB API access
 
----
-
 ## Evaluation Metrics
 
 | Metric | Notes |
@@ -237,8 +215,6 @@ Prediction quality for each novel compound is assessed by:
 | MCC | Additional; most informative metric under class imbalance |
 
 Class imbalance (many more inactive than active compounds) is expected and addressed via appropriate metric selection and potential class weighting in the SVC.
-
----
 
 ## Schedule
 
@@ -252,8 +228,6 @@ Class imbalance (many more inactive than active compounds) is expected and addre
 | 6 | PharmGKB cross-referencing and pharmacogenomic analysis (Task 7) |
 | 7 | Results interpretation, report writing, code cleanup (Task 8) |
 | Final | Finalize report, submission package, peer review |
-
----
 
 ## References
 
