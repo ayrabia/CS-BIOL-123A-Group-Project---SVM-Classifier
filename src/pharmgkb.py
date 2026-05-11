@@ -26,16 +26,25 @@ def lookup_by_name(drug_name: str) -> dict | None:
 
 def lookup_by_pubchem_cid(cid: int) -> dict | None:
     """
-    Query PharmGKB for a compound by PubChem CID via cross-reference.
-    Returns the first matching entry or None if not found.
+    Query PharmGKB for a compound by PubChem CID.
+    Fetches synonyms from PubChem (which include common/trade names) and tries
+    each against PharmGKB until a match is found.
+    Returns the first matching PharmGKB entry or None.
     """
-    url = f"{PHARMGKB_BASE}/chemical"
-    params = {"crossReferences.resource": "PubChem Compound", "crossReferences.resourceId": str(cid), "view": "base"}
-    resp = requests.get(url, params=params, timeout=15)
-    if resp.status_code != 200:
+    # Fetch all PubChem synonyms — includes generic names, trade names, etc.
+    syn_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/synonyms/JSON"
+    try:
+        pr = requests.get(syn_url, timeout=15)
+        info = pr.json().get("InformationList", {}).get("Information", [])
+        synonyms = info[0].get("Synonym", [])[:10] if info else []  # try first 10
+    except Exception:
         return None
-    data = resp.json().get("data", [])
-    return data[0] if data else None
+
+    for name in synonyms:
+        result = lookup_by_name(name)
+        if result:
+            return result
+    return None
 
 
 def annotate_predictions(predictions_df):
