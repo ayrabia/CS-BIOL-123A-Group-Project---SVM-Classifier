@@ -6,18 +6,19 @@ The instructor-provided training CSV already contains precomputed descriptors.
 """
 
 from rdkit import Chem
-from rdkit.Chem import Descriptors, rdMolDescriptors
+from rdkit.Chem import Descriptors, rdMolDescriptors, rdFingerprintGenerator
 import numpy as np
 import pandas as pd
 
+_morgan_gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
+
 
 def smiles_to_morgan(smiles: str, radius: int = 2, n_bits: int = 2048) -> np.ndarray | None:
-    """Compute Morgan fingerprint (ECFP) for a SMILES string."""
+    """Compute Morgan fingerprint (ECFP4) for a SMILES string."""
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return None
-    fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits)
-    return np.array(fp)
+    return _morgan_gen.GetFingerprintAsNumPy(mol)
 
 
 def smiles_to_descriptors(smiles: str) -> dict | None:
@@ -33,6 +34,15 @@ def smiles_to_descriptors(smiles: str) -> dict | None:
         "TPSA": Descriptors.TPSA(mol),
         "RotBonds": rdMolDescriptors.CalcNumRotatableBonds(mol),
     }
+
+
+def compute_rdkit_features(smiles: str) -> np.ndarray | None:
+    """Return a single feature vector (2048 Morgan bits + 6 descriptors) or None."""
+    fp = smiles_to_morgan(smiles)
+    desc = smiles_to_descriptors(smiles)
+    if fp is None or desc is None:
+        return None
+    return np.concatenate([fp, np.array(list(desc.values()))])
 
 
 def featurize_smiles_list(smiles_list: list[str]) -> pd.DataFrame:

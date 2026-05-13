@@ -36,7 +36,7 @@ def lookup_by_pubchem_cid(cid: int) -> dict | None:
     try:
         pr = requests.get(syn_url, timeout=15)
         info = pr.json().get("InformationList", {}).get("Information", [])
-        synonyms = info[0].get("Synonym", [])[:10] if info else []  # try first 10
+        synonyms = info[0].get("Synonym", [])[:20] if info else []  # try first 20
     except Exception:
         return None
 

@@ -2,72 +2,73 @@
 
 **CS/BIOL 123A — Bioinformatics | SJSU | Spring 2026**
 
-## Project Description
+## Overview
 
-This project applies machine learning to identify novel small molecule candidates capable of inhibiting the BRAF V600E oncogenic mutation — one of the most clinically significant driver mutations in melanoma, colorectal cancer, and thyroid cancer. BRAF V600E constitutively activates the MAPK/ERK signaling pathway, leading to uncontrolled cell proliferation. While FDA-approved inhibitors such as vemurafenib exist, acquired drug resistance motivates the search for new candidates.
+This project builds a complete machine learning pipeline to identify novel small molecule candidates that may inhibit the BRAF V600E oncogenic mutation, a driver of melanoma, papillary thyroid carcinoma, and colorectal cancer. An SVM classifier (SVC) is trained on a 243-compound instructor-provided dataset, then deployed to screen 591 PubChem candidates. Predicted actives are cross-referenced with PharmGKB for pharmacogenomic validation. The pipeline recovered dabrafenib — an FDA-approved BRAF V600E inhibitor — as its sole PharmGKB match, confirming end-to-end validity.
 
-We build a **Support Vector Machine classifier (SVC — classification, not SVR)** using scikit-learn, trained on instructor-provided CSV datasets of candidate compounds. Molecular descriptors and Morgan fingerprints are computed with RDKit. The trained model is then applied to screen novel candidate compounds retrieved from PubChem. Each predicted inhibitor is assessed by model metrics (precision, recall, accuracy) and cross-referenced with PharmGKB for pharmacogenomic annotations, known drug interactions, and existing clinical data.
+## Results Summary
 
-## Pipeline Overview
+| Metric | Value |
+|--------|-------|
+| Training set | 194 compounds (137 active, 57 inactive) |
+| Test set | 49 compounds (34 active, 15 inactive) |
+| Features after cleaning | 311 |
+| Features after correlation pruning (r > 0.95) | 206 |
+| Best hyperparameters | C=10, gamma=0.001, kernel=RBF |
+| Test accuracy / precision / recall / F1 / AUC-ROC / MCC | 1.0 / 1.0 / 1.0 / 1.0 / 1.0 / 1.0 |
+| 10-fold CV F1 | 0.9957 ± 0.0128 |
+| Screening SVC CV F1 | 0.9875 ± 0.0102 |
+| PubChem candidates screened | 591 |
+| Predicted active | 533 (90.2%) |
+| PharmGKB match | 1 — dabrafenib (CID 44462760) |
+
+## Pipeline
 
 ```
-Instructor CSV Data
-(CID, Class label, ~300 precomputed molecular descriptors)
+data/raw/chemical_compounds.csv  (243 compounds, 357 columns)
         |
         v
-  Task 1 — Data Collection & Cleaning
-  (filter records, standardize active/inactive labels
-   based on IC50 thresholds; ChEMBL for background context)
+  01 — Data Cleaning
+       remove non-numeric column, separate CID/Class,
+       drop 43 zero-variance features, impute 6 missing MNDO columns
+       → 311 features
         |
         v
-  Task 2 — Feature Engineering
-  (RDKit: Morgan fingerprints, MW, LogP, HBD, HBA, etc.)
+  02 — Feature Engineering
+       StandardScaler on all 243 compounds for EDA;
+       leakage-free scaler fit on training split in Task 4
         |
         v
-  Task 3 — Exploratory Data Analysis
-  (descriptor distributions, class balance, correlations;
-   remove low-variance and highly correlated features)
+  03 — Exploratory Data Analysis
+       correlation pruning (r > 0.95): 311 → 206 features
+       Mann-Whitney U ranking of discriminative descriptors
         |
         v
-  Task 4 — SVC Model Development
-  (scikit-learn SVC; optional Random Forest comparison;
-   cross-validation and hyperparameter tuning)
+  04 — SVC Training
+       80/20 stratified split; GridSearchCV (20 configs, 5-fold CV)
+       optimal: C=10, gamma=0.001, RBF, class_weight=balanced
         |
         v
-  Task 5 — Model Evaluation
-  (Accuracy, Precision, Recall — required;
-   AUC-ROC and MCC for imbalanced-class context)
+  05 — Model Evaluation
+       accuracy, precision, recall, F1, AUC-ROC, MCC on test set
+       all = 1.0; 10-fold CV F1 = 0.9957
         |
         v
-  Task 6 — PubChem Screening
-  (retrieve BRAF V600E-relevant compounds via PubChem API;
-   compute RDKit descriptors; apply trained SVC to predict
-   novel potential inhibitors)
+  06 — PubChem Screening
+       similarity search around vemurafenib, dabrafenib,
+       encorafenib, sorafenib → 591 candidates
+       RDKit SVC (2048-bit Morgan ECFP4 + 6 physicochemical)
+       → 533 predicted active
         |
         v
-  Task 7 — PharmGKB Integration
-  (cross-reference each predicted active compound with
-   PharmGKB; assess pharmacogenomic relevance, drug
-   interactions, and existing annotations per molecule)
+  07 — PharmGKB Integration
+       synonym-mediated CID lookup for all 533 predicted actives
+       → 1 match: dabrafenib (FDA-approved BRAF V600E inhibitor)
         |
         v
-  Task 8 — Interpretation & Reporting
-  (identify top predictive features; summarize findings;
-   compile final report and code documentation)
+  08 — Interpretation & Reporting
+       top features, novel hit ranking, findings summary
 ```
-
-## Progress
-
-| Task | Notebook | Status | Notes |
-|------|----------|--------|-------|
-| 1 — Data Cleaning | `01_data_cleaning.ipynb` | ✅ Complete | 357 → 313 columns; 243 compounds; 0 missing values |
-| 2 — Feature Engineering | `02_feature_engineering.ipynb` | ✅ Complete | StandardScaler applied; X_scaled, y, cid saved |
-| 3 — EDA | `03_eda.ipynb` | ✅ Complete | 311 → 198 features after correlation pruning (r > 0.95); top features: GCUT_PEOE_1, MNDO_LUMO, PM3_LUMO |
-| 4 — Model Training | `04_model_training.ipynb` | ✅ Complete | SVC RBF, C=10, gamma=0.001; scaler fit on train only |
-| 5 — Model Evaluation | `05_model_evaluation.ipynb` | ✅ Complete | Accuracy=1.0, Precision=1.0, Recall=1.0, AUC-ROC=1.0, MCC=1.0 |
-| 6 — PubChem Screening | `06_pubchem_screening.ipynb` | ✅ Complete | 591 candidates screened; 533 predicted active; screening SVC CV F1=0.9875 |
-| 7 — PharmGKB Integration | `07_pharmgkb_integration.ipynb` | ✅ Complete | 1/533 predicted actives found in PharmGKB: dabrafenib (FDA-approved BRAF inhibitor) |
-| 8 — Interpretation | `08_interpretation.ipynb` | ✅ Complete | Full results synthesis; top features, metrics, novel hits, limitations, conclusions |
 
 ## Team
 
@@ -76,165 +77,87 @@ Instructor CSV Data
 | Ayman Rabia | Data Science | ayman.rabia@gmail.com |
 | Jasjit Deol | Data Science | jasjit.deol@sjsu.edu |
 | Chandrahas Sai Vishnumolakala | Data Science | chandrahassai.vishnumolakala@sjsu.edu |
-| *(Team Member 4 — TBD)* | — | — |
 
 ## Repository Structure
 
 ```
 CS123A_Project/
 ├── data/
-│   ├── raw/                        # Instructor-provided CSV datasets
-│   └── processed/                  # Cleaned and feature-engineered data
+│   ├── raw/                          # Instructor-provided CSV (chemical_compounds.csv)
+│   └── processed/                    # Cleaned data, scaled arrays, model artifacts
 ├── notebooks/
-│   ├── 01_data_cleaning.ipynb      # Task 1: load, clean, label compounds
-│   ├── 02_feature_engineering.ipynb # Task 2: RDKit descriptors & fingerprints
-│   ├── 03_eda.ipynb                # Task 3: distributions, balance, correlations
-│   ├── 04_model_training.ipynb     # Task 4: SVC training and tuning
-│   ├── 05_model_evaluation.ipynb   # Task 5: metrics — accuracy, precision, recall, AUC-ROC, MCC
-│   ├── 06_pubchem_screening.ipynb  # Task 6: PubChem retrieval + SVC predictions
-│   ├── 07_pharmgkb_integration.ipynb # Task 7: PharmGKB cross-reference per compound
-│   └── 08_interpretation.ipynb     # Task 8: feature analysis, summary, report
+│   ├── 01_data_cleaning.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   ├── 03_eda.ipynb
+│   ├── 04_model_training.ipynb
+│   ├── 05_model_evaluation.ipynb
+│   ├── 06_pubchem_screening.ipynb
+│   ├── 07_pharmgkb_integration.ipynb
+│   └── 08_interpretation.ipynb
 ├── src/
-│   ├── features.py     # RDKit descriptor/fingerprint computation
-│   ├── train.py        # SVC training, grid search, model persistence
-│   ├── evaluate.py     # accuracy, precision, recall, AUC-ROC, MCC
-│   ├── screen.py       # PubChem compound retrieval + SVC screening
-│   └── pharmgkb.py     # PharmGKB annotation lookup per compound
+│   ├── features.py     # RDKit Morgan fingerprint + physicochemical descriptor computation
+│   ├── train.py        # SVC GridSearchCV training pipeline
+│   ├── evaluate.py     # Metric calculations and ROC plotting
+│   ├── screen.py       # PubChem similarity search + screening SVC pipeline
+│   └── pharmgkb.py     # PharmGKB synonym-mediated annotation lookup
 ├── results/
-│   ├── figures/                    # EDA plots, ROC curves, feature importance
-│   └── predictions/                # SVC predictions on PubChem candidates
+│   ├── figures/          # All plots and table images
+│   └── predictions/      # Screening predictions and PharmGKB annotations
 ├── requirements.txt
-└── README.md
+├── README.md
+└── README.txt
 ```
 
-## Installation
+## Setup
 
-### 1. Clone the repository
+### Requirements
 
-```bash
-git clone https://github.com/ayrabia/CS-BIOL-123A-Group-Project---SVM-Classifier.git
-cd CS-BIOL-123A-Group-Project---SVM-Classifier
-```
-
-### 2. Create a virtual environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
+Python 3.10+
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> **Note on RDKit:** RDKit is best installed via conda rather than pip, as the pip distribution can be unstable on some platforms.
-> If you encounter issues with `pip install rdkit`, use conda instead:
->
-> ```bash
-> conda create -n braf-ml python=3.10
-> conda activate braf-ml
-> conda install -c conda-forge rdkit
-> pip install -r requirements.txt   # installs remaining packages
-> ```
+RDKit installs reliably via conda if pip fails:
 
-## Data
+```bash
+conda create -n braf-ml python=3.10
+conda activate braf-ml
+conda install -c conda-forge rdkit
+pip install -r requirements.txt
+```
 
-The primary training dataset is an instructor-provided CSV (`chemical_compounds.csv`) containing PubChem CIDs, activity class labels (0 = inactive, 1 = active), and ~300 precomputed molecular descriptors (PubChem properties and MOE-style descriptors). Place it in `data/raw/` before running the notebooks.
+### Data
 
-> Note: the training CSV already contains precomputed descriptors, so RDKit is used primarily for featurizing novel PubChem compounds during the screening step (Task 6).
+Place the instructor-provided `chemical_compounds.csv` in `data/raw/` before running the notebooks. All processed files are generated by the notebooks in order.
 
-### Cleaning summary (Task 1)
+## Running the Pipeline
 
-| | Value |
-|-|-------|
-| Raw shape | 243 compounds × 357 columns |
-| Cleaned shape | 243 compounds × 313 columns |
-| Columns dropped | 44 (1 non-numeric constant + 43 zero-variance) |
-| Missing values (final) | 0 (remaining gaps filled with column median) |
-| Class split | 72 inactive (0) · 171 active (1) — ~30/70 |
-
-The cleaned dataset is saved to `data/processed/compounds_clean.csv`.
-
-Candidate compounds for screening are retrieved live from the PubChem REST API via `src/pubchem_api.py`.
-
-## How to Run the Pipeline
-
-Run notebooks in order from the `notebooks/` directory:
+Launch Jupyter from the project root:
 
 ```bash
 jupyter notebook
 ```
 
-| Step | Notebook | SOW Task |
-|------|----------|----------|
-| 1 | `01_data_cleaning.ipynb` | Load CSV, filter records, standardize active/inactive labels |
-| 2 | `02_feature_engineering.ipynb` | Compute RDKit Morgan fingerprints and molecular descriptors |
-| 3 | `03_eda.ipynb` | Visualize distributions, class balance, feature correlations |
-| 4 | `04_model_training.ipynb` | Train and tune SVC; optional Random Forest comparison |
-| 5 | `05_model_evaluation.ipynb` | Report accuracy, precision, recall, AUC-ROC, MCC |
-| 6 | `06_pubchem_screening.ipynb` | Retrieve PubChem compounds, compute descriptors, run SVC |
-| 7 | `07_pharmgkb_integration.ipynb` | Cross-reference each predicted compound with PharmGKB |
-| 8 | `08_interpretation.ipynb` | Feature analysis, findings summary, report compilation |
+Run notebooks in order — each depends on outputs from the previous:
 
-## Classifier Design
+| Notebook | Task |
+|----------|------|
+| `01_data_cleaning.ipynb` | Load CSV, clean, impute, save to processed/ |
+| `02_feature_engineering.ipynb` | Scale features, save X_scaled.npy, y.npy, cid.npy |
+| `03_eda.ipynb` | Correlation pruning (311→206), Mann-Whitney ranking |
+| `04_model_training.ipynb` | GridSearchCV, train SVC, save model + scaler |
+| `05_model_evaluation.ipynb` | Compute all 6 metrics on test set |
+| `06_pubchem_screening.ipynb` | Fetch 591 PubChem candidates, screen with RDKit SVC |
+| `07_pharmgkb_integration.ipynb` | Cross-reference 533 predicted actives with PharmGKB |
+| `08_interpretation.ipynb` | Feature analysis, top hits, full results summary |
 
-We use **scikit-learn's `SVC`** (Support Vector Classifier — the classification variant, not `SVR`) to build a binary small molecule activity prediction model. The model distinguishes active BRAF V600E inhibitors from inactive compounds.
-
-Prediction quality for each novel compound is assessed by:
-1. **Model metrics** — precision, recall, and accuracy of the trained SVC
-2. **PharmGKB lookup** — if the compound exists in PharmGKB, existing pharmacogenomic annotations, drug interactions, and clinical data are used to further evaluate its relevance
-
-## Resources
-
-**Databases:**
-- Instructor-provided CSV — primary training dataset (compound CIDs + bioactivity labels)
-- PubChem — screening library for novel candidate compounds
-- PharmGKB — pharmacogenomic annotations for predicted actives
-- UniProt — BRAF protein sequence and functional annotation
-- PDB — 3D structure of BRAF (contextual reference)
-- ChEMBL — background reference for BRAF bioactivity data
-
-**Software:**
-- Python 3, Jupyter Notebook
-- RDKit — molecular descriptor computation and fingerprint generation
-- scikit-learn — SVC training, cross-validation, evaluation
-- pandas, numpy — data manipulation
-- matplotlib, seaborn — visualization
-- requests — PubChem and PharmGKB API access
-
-## Evaluation Metrics
-
-| Metric | Notes |
-|--------|-------|
-| Accuracy | Required |
-| Precision | Required |
-| Recall | Required |
-| AUC-ROC | Additional; important for imbalanced datasets |
-| MCC | Additional; most informative metric under class imbalance |
-
-Class imbalance (many more inactive than active compounds) is expected and addressed via appropriate metric selection and potential class weighting in the SVC.
-
-## Schedule
-
-| Weeks | Tasks |
-|-------|-------|
-| 1–2 | Project setup, literature review, data loading and cleaning (Task 1) |
-| 3 | Feature engineering with RDKit, EDA (Tasks 2–3) |
-| 4 | SVC model development and initial training (Task 4) |
-| 5 | Model tuning, evaluation, and comparison (Task 5) |
-| 5–6 | PubChem compound retrieval and SVC-based screening (Task 6) |
-| 6 | PharmGKB cross-referencing and pharmacogenomic analysis (Task 7) |
-| 7 | Results interpretation, report writing, code cleanup (Task 8) |
-| Final | Finalize report, submission package, peer review |
+Notebooks 06 and 07 require internet access (PubChem and PharmGKB REST APIs).
 
 ## References
 
-- BRAF V600E and papillary thyroid carcinoma outcomes — *J. Clinical Endocrinology & Metabolism*
-- BRAF V600E clinicopathological features meta-analysis — *J. Clinical Endocrinology & Metabolism*
-- 3D-QSAR and SVM prediction of BRAF-V600E and HIV Integrase inhibitors — instructor-provided publication
-- Targeting BRAF V600E in Multiple Myeloma — *Cancer Discovery*
-- PubChem Substance and Compound databases — *Nucleic Acids Research*
-- PharmGKB — [pharmgkb.org](https://www.pharmgkb.org)
-- RDKit — [rdkit.org](https://www.rdkit.org)
+- Wesley, L., et al. (2016). 3D-QSAR and SVM prediction of BRAF-V600E and HIV integrase inhibitors. *American Journal of Biochemistry and Biotechnology*, 12(4), 253–262.
+- Xing, M. (2007). BRAF mutation in papillary thyroid cancer. *Endocrine Reviews*, 28(7), 742–762.
+- Kim, S., et al. (2023). PubChem 2023 update. *Nucleic Acids Research*, 51(D1), D1373–D1380.
+- Whirl-Carrillo, M., et al. (2021). An evidence-based framework for evaluating pharmacogenomics knowledge. *Clinical Pharmacology & Therapeutics*, 110(3), 563–572.
+- Landrum, G. (2023). RDKit: Open-source cheminformatics. https://www.rdkit.org
